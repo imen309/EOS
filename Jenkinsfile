@@ -16,7 +16,7 @@ pipeline {
                 checkout([
                     $class: 'GitSCM',
                     branches: [[name: env.BRANCH_NAME]], // Checkout the current branch
-                    userRemoteConfigs: [[url: 'https://github.com/imen309/Ecommerce.git']]
+                    userRemoteConfigs: [[url: 'https://github.com/imen309/EOS.git']]
                 ])
             }
         }
@@ -31,7 +31,7 @@ pipeline {
                     for (def service in microservices) {
                         dir(service) {
                             // Run TruffleHog to check for secrets in the repository
-                            sh 'docker run --rm gesellix/trufflehog --json https://github.com/imen309/Ecommerce.git > trufflehog.json'
+                            sh 'docker run --rm gesellix/trufflehog --json https://github.com/imen309/EOS.git > trufflehog.json'
                             sh 'cat trufflehog.json' // Output the results
                         }
                     }
