@@ -24,7 +24,7 @@ public class EcommProductApplication {
   public ConcurrentLinkedDeque<?> redisQueue(){
     return new ConcurrentLinkedDeque<>();
   }
-
+  //this is a method to execute service
   @Bean
   public ExecutorService executorService(){
     return Executors.newFixedThreadPool(2);
