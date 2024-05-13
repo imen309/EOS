@@ -87,8 +87,15 @@ pipeline {
                     // Perform static analysis with SonarQube for each microservice
                     for (def service in microservices) {
                         dir(service) {
+                        /*
                             withSonarQubeEnv(credentialsId: 'sonarqube-id') {
                                 sh 'mvn sonar:sonar'
+                        */
+                            withSonarQubeEnv(credentialsId: 'sonarqube-id', installationName: 'sonarqube') {
+                                                sh "mvn sonar:sonar \
+                                                    -Dsonar.host.url=http://localhost:9000 "
+                                            }
+
                             }
                         }
                     }
