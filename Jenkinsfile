@@ -75,27 +75,25 @@ pipeline {
         }
 
         stage('SonarQube Analysis') {
-         environment {
-                        SCANNER_HOME = tool 'sonarqube'
-                    }
+            environment {
+                SCANNER_HOME = tool 'sonarqube'
+            }
 
             when {
-                expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
+                expression {
+                    (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master')
+                }
             }
+
             steps {
                 script {
                     // Perform static analysis with SonarQube for each microservice
                     for (def service in microservices) {
                         dir(service) {
-                        /*
-                            withSonarQubeEnv(credentialsId: 'sonarqube-id') {
-                                sh 'mvn sonar:sonar'
-                        */
                             withSonarQubeEnv(credentialsId: 'sonarqube-id', installationName: 'sonarqube') {
-                                                sh "mvn sonar:sonar \
-                                                    -Dsonar.host.url=http://localhost:9000 "
-                                            }
-
+                                sh "
+                                    mvn sonar:sonar -Dsonar.host.url=http://localhost:9000
+                                "
                             }
                         }
                     }
