@@ -88,7 +88,7 @@ pipeline {
                     for (def service in microservices) {
                         dir(service) {
                             withSonarQubeEnv(installationName: 'sonarqube'){
-                               sh 'mvn sonar:sonar'
+                               sh 'mvn sonar:sonar -Dsonar.host.url=http://localhost:9000'
                             }
                             timeout(time: 1, unit: 'MINUTES') {
                                waitForQualityGate abortPipeline: true
