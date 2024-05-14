@@ -74,14 +74,25 @@ pipeline {
                 }
             }
         }
-
+        stage('SonarQube Analysis') {
+               when {
+                              expression {
+                                  (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master')
+                              }
+                          }
+          steps {
+            withSonarQubeEnv('sonarqube') {
+              sh 'mvn sonar:sonar'
+            }
+          }
+        }
+/*
         stage('SonarQube Analysis') {
             when {
                 expression {
                     (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master')
                 }
             }
-
             steps {
                 script {
                     // Perform static analysis with SonarQube for each microservice
@@ -98,7 +109,7 @@ pipeline {
                 }
             }
         }
-
+*/
         stage('Docker Login') {
             when {
                 expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
