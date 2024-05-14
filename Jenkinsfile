@@ -10,6 +10,7 @@ pipeline {
     environment {
         DOCKERHUB_USERNAME = "imenmettichi"
         // Ensure Docker credentials are stored securely in Jenkins
+        SCANNER_HOME = tool 'sonarqube'
     }
 
     stages {
@@ -75,10 +76,6 @@ pipeline {
         }
 
         stage('SonarQube Analysis') {
-            environment {
-                SCANNER_HOME = tool 'sonarqube'
-            }
-
             when {
                 expression {
                     (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master')
@@ -90,8 +87,11 @@ pipeline {
                     // Perform static analysis with SonarQube for each microservice
                     for (def service in microservices) {
                         dir(service) {
-                            withSonarQubeEnv(credentialsId: 'sonarqube-id', installationName: 'sonarqube') {
-                                sh ' mvn sonar:sonar -Dsonar.host.url=http://127.0.0.1:9000 '
+                            withSonarQubeEnv(installationName: 'sonarqube'){
+                               sh 'mvn sonar:sonar'
+                            }
+                            timeout(time: 1, unit: 'MINUTES') {
+                               waitForQualityGate abortPipeline: true
                             }
                         }
                     }
