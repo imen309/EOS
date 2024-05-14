@@ -86,8 +86,7 @@ pipeline {
                   for (def service in microservices) {
                      dir(service) {
                          withSonarQubeEnv('sonarqube') {
-                            sh "mvn sonar:sonar -Dsonar.host.url=http://172.17.0.2:9000 \
-                            -Dsonar.login=sqa_defc8734b318d745060cf52e31e98cc489a6a80d"
+                            sh 'mvn sonar:sonar'
 
                           }
              }
