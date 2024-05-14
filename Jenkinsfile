@@ -81,10 +81,17 @@ pipeline {
                               }
                           }
           steps {
-            withSonarQubeEnv('sonarqube') {
-              sh 'mvn sonar:sonar'
-            }
+            script {
+               // Run unit tests for each microservice using Maven
+                  for (def service in microservices) {
+                     dir(service) {
+                         withSonarQubeEnv('sonarqube') {
+                            sh 'mvn sonar:sonar'
+                          }
+             }
+           }
           }
+         }
         }
 /*
         stage('SonarQube Analysis') {
