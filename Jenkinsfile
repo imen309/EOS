@@ -43,6 +43,27 @@ pipeline {
             }
         }
 
+        stage('OWASP Dependency Check') {
+                    when {
+                        expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
+                    }
+                    steps {
+                        script {
+                            // Perform OWASP dependency check for each microservice
+                            for (def service in microservices) {
+                                dir(service) {
+                                  sh 'rm -f owasp-dependency-check.sh'
+                                  sh 'wget "https://raw.githubusercontent.com/imen309/EOS/dev/owasp-dependency-check.sh"'
+                                  sh 'chmod +x owasp-dependency-check.sh'
+                                  sh './owasp-dependency-check.sh'
+                                  // Display analysis report
+                                  sh 'cat /var/lib/jenkins/OWASP-Dependency-Check/reports/dependency-check-report.xml'
+                                }
+                            }
+                        }
+                    }
+                }
+
         stage('Maven Build') {
             when {
                 expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
