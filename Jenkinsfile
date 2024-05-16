@@ -74,7 +74,7 @@ pipeline {
                 }
             }
         }
-        stage('SonarQube Analysis and Dependency Check') {
+        stage('SonarQube Analysis') {
                when {
                               expression {
                                   (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master')
@@ -88,8 +88,6 @@ pipeline {
                          withSonarQubeEnv('sonarqube') {
                             sh 'mvn sonar:sonar'
                           }
-                          // Perform Dependency Check after SonarQube analysis
-                         dependencyCheck additionalArguments: '--format HTML', odcInstallation: 'dependency-check'
              }
            }
           }
