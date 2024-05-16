@@ -53,7 +53,7 @@ pipeline {
                             for (def service in microservices) {
                                 dir(service) {
                                   sh 'rm -f owasp-dependency-check.sh'
-                                  sh 'wget "https://raw.githubusercontent.com/imen309/EOS/dev/owasp-dependency-check.sh"'
+                                  sh 'curl -o owasp-dependency-check.sh https://raw.githubusercontent.com/imen309/EOS/dev/owasp-dependency-check.sh'
                                   sh 'chmod +x owasp-dependency-check.sh'
                                   sh './owasp-dependency-check.sh'
                                   // Display analysis report
