@@ -74,7 +74,7 @@ pipeline {
                 }
             }
         }
-        stage('SonarQube Analysis') {
+        stage('SonarQube Analysis and Dependency Check') {
                when {
                               expression {
                                   (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master')
@@ -87,37 +87,15 @@ pipeline {
                      dir(service) {
                          withSonarQubeEnv('sonarqube') {
                             sh 'mvn sonar:sonar'
-
                           }
+                          // Perform Dependency Check after SonarQube analysis
+                         dependencyCheck additionalArguments: '--format HTML', odcInstallation: 'dependency-check'
              }
            }
           }
          }
         }
-/*
-        stage('SonarQube Analysis') {
-            when {
-                expression {
-                    (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master')
-                }
-            }
-            steps {
-                script {
-                    // Perform static analysis with SonarQube for each microservice
-                    for (def service in microservices) {
-                        dir(service) {
-                            withSonarQubeEnv(installationName: 'sonarqube'){
-                               sh 'mvn sonar:sonar -Dsonar.host.url=http://localhost:9000'
-                            }
-                            timeout(time: 1, unit: 'MINUTES') {
-                               waitForQualityGate abortPipeline: true
-                            }
-                        }
-                    }
-                }
-            }
-        }
-*/
+
         stage('Docker Login') {
             when {
                 expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
