@@ -55,9 +55,7 @@ pipeline {
                                   sh 'rm -f owasp-dependency-check.sh'
                                   sh 'curl -o owasp-dependency-check.sh https://raw.githubusercontent.com/imen309/EOS/dev/owasp-dependency-check.sh'
                                   sh 'chmod +x owasp-dependency-check.sh'
-                                  // Add a 1-minute  delay before checking the next microservice
-                                  sleep(time: 1, unit: 'MINUTES')
-                                  sh './https://github.com/imen309/EOS/blob/dev/owasp-dependency-check.sh'
+                                  sh './owasp-dependency-check.sh'
                                   // Display analysis report
                                   sh 'cat /var/lib/jenkins/OWASP-Dependency-Check/reports/dependency-check-report.xml'
                                 }
