@@ -42,7 +42,7 @@ pipeline {
                 }
             }
         }
-
+/*
         stage('OWASP Dependency Check') {
                     when {
                         expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
@@ -63,7 +63,7 @@ pipeline {
                         }
                     }
                 }
-
+*/
         stage('Maven Build') {
             when {
                 expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
@@ -95,7 +95,7 @@ pipeline {
                 }
             }
         }
-        stage('SonarQube Analysis') {
+        stage('SonarQube Analysis and Dependency Check') {
                when {
                               expression {
                                   (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master')
@@ -109,6 +109,7 @@ pipeline {
                          withSonarQubeEnv('sonarqube') {
                             sh 'mvn sonar:sonar'
                           }
+                          dependencyCheck additionalArguments: '--format HTML', odcInstallation: 'dependency-check'
              }
            }
           }
