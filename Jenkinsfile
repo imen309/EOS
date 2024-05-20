@@ -1,5 +1,5 @@
 
-def microservices = ['ecomm-cart']
+def microservices = ['ecomm-cart', 'ecomm-product', 'ecomm-order', 'ecomm-web']
 
 pipeline {
     agent any
@@ -42,28 +42,7 @@ pipeline {
                 }
             }
         }
-/*
-        stage('OWASP Dependency Check') {
-                    when {
-                        expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
-                    }
-                    steps {
-                        script {
-                            // Perform OWASP dependency check for each microservice
-                            for (def service in microservices) {
-                                dir(service) {
-                                  sh 'rm -f owasp-dependency-check.sh'
-                                  sh 'curl -o owasp-dependency-check.sh https://raw.githubusercontent.com/imen309/EOS/dev/owasp-dependency-check.sh'
-                                  sh 'chmod +x owasp-dependency-check.sh'
-                                  sh './owasp-dependency-check.sh'
-                                  // Display analysis report
-                                  sh 'cat /var/lib/jenkins/OWASP-Dependency-Check/reports/dependency-check-report.xml'
-                                }
-                            }
-                        }
-                    }
-                }
-*/
+
         stage('Maven Build') {
             when {
                 expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
@@ -96,11 +75,11 @@ pipeline {
             }
         }
         stage('SonarQube Analysis and Dependency Check') {
-               when {
-                              expression {
-                                  (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master')
-                              }
-                          }
+          when {
+            expression {
+              (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master')
+                }
+               }
           steps {
             script {
                // Run unit tests for each microservice using Maven
