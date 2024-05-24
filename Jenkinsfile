@@ -1,5 +1,5 @@
 
-def microservices = ['ecomm-cart', 'ecomm-product', 'ecomm-order', 'ecomm-web']
+def microservices = ['ecomm-cart']
 
 pipeline {
     agent any
@@ -176,5 +176,26 @@ pipeline {
                 }
             }
         }
+
+        stage('Deploy to Kubernetes') {
+             when {
+               expression { (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
+             }
+             steps {
+             sshagent(credentials: [env.SSH_CREDENTIALS_ID]) {
+               script {
+                 if (env.BRANCH_NAME == 'test') {
+                     sh "ssh $MASTER_NODE kubectl apply -f cart.yml"
+         			 sh "ssh $MASTER_NODE kubectl apply -f namespace.yml"
+        		 } else if (env.BRANCH_NAME == 'master') {
+                     sh "ssh $MASTER_NODE kubectl apply -f cart.yml"
+         			 sh "ssh $MASTER_NODE kubectl apply -f namespace.yml"
+         		 }
+               }
+             }
+           }
+         }
+
+
     }
 }
