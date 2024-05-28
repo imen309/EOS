@@ -190,6 +190,7 @@ pipeline {
                sh " [ -d ~/.ssh ] || mkdir ~/.ssh && chmod 0700 ~/.ssh "
                sh " ssh-keyscan -t rsa,dsa ${MASTER_NODE} >> ~/.ssh/known_hosts "
                  if (env.BRANCH_NAME == 'test') {
+                      sh "ssh ubuntu@$MASTER_NODE 'sudo kubectl apply -f namespace.yml'"
                      sh "ssh ubuntu@$MASTER_NODE 'sudo kubectl apply -f cart.yml'"
                      /*
          			 sh "ssh $MASTER_NODE kubectl apply -f namespace.yml"
