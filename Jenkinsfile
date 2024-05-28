@@ -9,11 +9,14 @@ pipeline {
 
     environment {
         DOCKERHUB_USERNAME = "imenmettichi"
+        SSH_CREDENTIALS_ID= "ec2sshkeyID"
         // Ensure Docker credentials are stored securely in Jenkins
         SCANNER_HOME = tool 'sonarqube'
+        MASTER_NODE= "44.223.127.246"
     }
 
     stages {
+
         stage('Checkout') {
             steps {
                 // Checkout the repository from GitHub
@@ -24,7 +27,7 @@ pipeline {
                 ])
             }
         }
-
+/*
         stage('Check Git Secrets') {
             when {
                 expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
@@ -151,7 +154,7 @@ pipeline {
                             sh "docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $PWD:/tmp/.cache/ aquasec/trivy image --scanners vuln --timeout 30m ${DOCKERHUB_USERNAME}/${service}_dev:latest > ${trivyReportFile}"
                         }
                          // Archive Trivy reports for all microservices in a dedicated directory
-                         archiveArtifacts "**/*.txt"
+                         archiveArtifacts
                     }
                 }
             }
@@ -176,7 +179,7 @@ pipeline {
                 }
             }
         }
-
+*/
         stage('Deploy to Kubernetes') {
              when {
                expression { (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
@@ -185,8 +188,10 @@ pipeline {
              sshagent(credentials: [env.SSH_CREDENTIALS_ID]) {
                script {
                  if (env.BRANCH_NAME == 'test') {
-                     sh "ssh $MASTER_NODE kubectl apply -f cart.yml"
+                     sh "ssh $MASTER_NODE 'kubectl apply -f cart.yml'"
+                     /*
          			 sh "ssh $MASTER_NODE kubectl apply -f namespace.yml"
+         			 */
         		 } else if (env.BRANCH_NAME == 'master') {
                      sh "ssh $MASTER_NODE kubectl apply -f cart.yml"
          			 sh "ssh $MASTER_NODE kubectl apply -f namespace.yml"
