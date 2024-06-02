@@ -1,22 +1,22 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: front
+  name: ui
   namespace: prod
   labels:
-    app: front
+    app: ui
 spec:
   selector:
     matchLabels:
-      app: front
+      app: ui
   template:
     metadata:
       labels:
-        app: front
+        app: ui
     spec:
       containers:
-        - name: front
-          image: imenmettichi/ecomm-front_prod
+        - name: ui
+          image: imenmettichi/ecomm-ui_prod
           ports:
             - containerPort: 80
 
@@ -25,7 +25,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: front
+  name: ui
   namespace: test
 spec:
   type: NodePort
@@ -34,4 +34,4 @@ spec:
       port: 80
       targetPort: 80
   selector:
-    app: front
+    app: ui
