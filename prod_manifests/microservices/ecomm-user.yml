@@ -1,0 +1,38 @@
+# user.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user
+  namespace: test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: user
+  template:
+    metadata:
+      labels:
+        app: user
+    spec:
+      containers:
+        - name: user
+          image: imenmettichi/ecomm-user_prod
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: app-config
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: user
+  namespace: test
+spec:
+  type: ClusterIP
+  selector:
+    app: user
+  ports:
+    - port: 8080
+      targetPort: 8080
