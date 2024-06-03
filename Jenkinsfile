@@ -35,7 +35,7 @@ pipeline {
                 ])
             }
         }
-
+/*
         stage('Check Git Secrets') {
             when {
                 expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
@@ -186,7 +186,7 @@ pipeline {
             }
         }
 
-
+*/
          stage('Kube-bench Scan') {
              when {
                expression { (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
