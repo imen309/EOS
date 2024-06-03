@@ -1,5 +1,13 @@
 
-def microservices = ['ecomm-cart']
+def microservices = ['ecomm-web']
+def frontEndService = 'ecomm-ui'
+def services = microservices + frontEndService
+def deployenv = ''
+if (env.BRANCH_NAME == 'test') {
+    deployenv = 'test'
+} else if (env.BRANCH_NAME == 'master') {
+    deployenv = 'prod'
+}
 
 pipeline {
     agent any
@@ -153,8 +161,6 @@ pipeline {
                         } else if (env.BRANCH_NAME == 'dev') {
                             sh "docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $PWD:/tmp/.cache/ aquasec/trivy image --scanners vuln --timeout 30m ${DOCKERHUB_USERNAME}/${service}_dev:latest > ${trivyReportFile}"
                         }
-                         // Archive Trivy reports for all microservices in a dedicated directory
-                         archiveArtifacts "**/*.txt"
                     }
                 }
             }
@@ -180,28 +186,102 @@ pipeline {
             }
         }
 
-        stage('Deploy to Kubernetes') {
+
+         stage('Kube-bench Scan') {
              when {
                expression { (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
              }
              steps {
-             sshagent(credentials: [env.SSH_CREDENTIALS_ID]) {
-               script {
-               sh " [ -d ~/.ssh ] || mkdir ~/.ssh && chmod 0700 ~/.ssh "
-               sh " ssh-keyscan -t rsa,dsa ${MASTER_NODE} >> ~/.ssh/known_hosts "
-                 if (env.BRANCH_NAME == 'test') {
-                      sh "ssh ubuntu@$MASTER_NODE 'sudo kubectl apply -f namespace.yml'"
-                     sh "ssh ubuntu@$MASTER_NODE 'sudo kubectl apply -f cart.yml'"
-                     /*
-         			 sh "ssh $MASTER_NODE kubectl apply -f namespace.yml"
-         			 */
-        		 } else if (env.BRANCH_NAME == 'master') {
-                     sh "ssh $MASTER_NODE kubectl apply -f cart.yml"
-         			 sh "ssh $MASTER_NODE kubectl apply -f namespace.yml"
-         		 }
-               }
+               sshagent(credentials: [env.SSH_CREDENTIALS_ID]) {
+                 sh " [ -d ~/.ssh ] || mkdir ~/.ssh && chmod 0700 ~/.ssh "
+                 sh " ssh-keyscan -t rsa,dsa ${MASTER_NODE} >> ~/.ssh/known_hosts "
+                 sh "ssh ubuntu@$MASTER_NODE 'kube-bench > kubebench_CIS_${env.BRANCH_NAME}.txt'"
+                  }
+                }
+              }
+
+         stage('Kubescope Scan') {
+            when {
+              expression { (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
+            }
+            steps {
+              sshagent(credentials: [env.SSH_CREDENTIALS_ID]) {
+                sh " [ -d ~/.ssh ] || mkdir ~/.ssh && chmod 0700 ~/.ssh "
+                sh " ssh-keyscan -t rsa,dsa ${MASTER_NODE} >> ~/.ssh/known_hosts "
+                sh "ssh ubuntu@$MASTER_NODE 'kubescape scan framework mitre > kubescape_mitre_${env.BRANCH_NAME}.txt'"
+                }
+              }
+            }
+         stage('Get YAML Files') {
+             when {
+                expression { (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
+
+             steps {
+                sshagent(credentials: [env.SSH_CREDENTIALS_ID]) {
+                    script {
+                       sh "del deploy_to_${deployenv}.sh"
+                       sh "curl -o deploy_to_${deployenv}.sh \"https://raw.githubusercontent.com/imen309/EOS/test/deploy_to_${deployenv}.sh\""
+                       sh "scp deploy_to_${deployenv}.sh ubuntu@$MASTER_NODE:~"
+                       sh " [ -d ~/.ssh ] || mkdir ~/.ssh && chmod 0700 ~/.ssh "
+                       sh " ssh-keyscan -t rsa,dsa ${MASTER_NODE} >> ~/.ssh/known_hosts "
+                       sh "ssh ubuntu@$MASTER_NODE chmod +x deploy_to_${deployenv}.sh"
+                       sh "ssh ubuntu@$MASTER_NODE ./deploy_to_${deployenv}.sh"
+                      }
+                  }
+              }
+         }
+
+
+         stage('Scan YAML Files') {
+             when {
+                expression { (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
+             }
+             steps {
+                sshagent(credentials: [env.SSH_CREDENTIALS_ID]) {
+                    script {
+                        sh " [ -d ~/.ssh ] || mkdir ~/.ssh && chmod 0700 ~/.ssh "
+                        sh " ssh-keyscan -t rsa,dsa ${MASTER_NODE} >> ~/.ssh/known_hosts "
+                        sh "ssh ubuntu@$MASTER_NODE rm -f kubescape_infrastructure_${deployenv}.txt"
+                        sh "ssh ubuntu@$MASTER_NODE rm -f kubescape_microservices_${deployenv}.txt"
+                        sh "ssh ubuntu@$MASTER_NODE 'kubescape scan ${deployenv}_manifests/infrastructure/*.yml > kubescape_infrastructure_${deployenv}.txt'"
+                        sh "ssh ubuntu@$MASTER_NODE 'kubescape scan ${deployenv}_manifests/microservices/*.yml > kubescape_microservices_${deployenv}.txt'"
+                    }
+                }
+             }
+         }
+
+         stage('Deploy to Kubernetes') {
+              when {
+                 expression { (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
+              }
+              steps {
+                 sshagent(credentials: [env.SSH_CREDENTIALS_ID]) {
+                     script {
+                         sh " [ -d ~/.ssh ] || mkdir ~/.ssh && chmod 0700 ~/.ssh "
+                         sh " ssh-keyscan -t rsa,dsa ${MASTER_NODE} >> ~/.ssh/known_hosts "
+                         sh "ssh ubuntu@$MASTER_NODE kubectl apply -f ${deployenv}_manifests/namespace.yml"
+                         sh "ssh ubuntu@$MASTER_NODE kubectl apply -f ${deployenv}_manifests/infrastructure/"
+                         for (service in services) {
+                              sh "ssh ubuntu@$MASTER_NODE kubectl apply -f ${deployenv}_manifests/microservices/${service}.yml"
+                         }
+                     }
+                 }
+              }
+         }
+
+         stage('Send reports to Slack') {
+             steps {
+                 slackUploadFile filePath: '**/trufflehog.txt',  initialComment: 'Check TruffleHog Reports!!'
+                 slackUploadFile filePath: '**/reports/*.html', initialComment: 'Check ODC Reports!!'
+                 slackUploadFile filePath: '**/trivy-*.txt', initialComment: 'Check Trivy Reports!!'
              }
            }
+         }
+
+         post {
+             always {
+                 archiveArtifacts artifacts: '**/trufflehog.txt, **/reports/*.html, **/trivy-*.txt'
+             }
          }
 
 
