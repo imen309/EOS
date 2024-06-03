@@ -186,8 +186,8 @@ pipeline {
             }
         }
 
-*/
-/*
+
+
          stage('Kube-bench Scan') {
              when {
                expression { (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
@@ -213,7 +213,7 @@ pipeline {
                 }
               }
             }
-    */
+
          stage('Get YAML Files') {
              when {
                  expression { (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
@@ -251,7 +251,7 @@ pipeline {
                 }
              }
          }
-
+*/
          stage('Deploy to Kubernetes') {
               when {
                  expression { (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
