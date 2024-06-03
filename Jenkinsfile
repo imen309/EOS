@@ -214,21 +214,21 @@ pipeline {
             }
          stage('Get YAML Files') {
              when {
-                expression { (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
-
+                 expression { (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
+             }
              steps {
-                sshagent(credentials: [env.SSH_CREDENTIALS_ID]) {
-                    script {
-                       sh "del deploy_to_${deployenv}.sh"
-                       sh "curl -o deploy_to_${deployenv}.sh \"https://raw.githubusercontent.com/imen309/EOS/test/deploy_to_${deployenv}.sh\""
-                       sh "scp deploy_to_${deployenv}.sh ubuntu@$MASTER_NODE:~"
-                       sh " [ -d ~/.ssh ] || mkdir ~/.ssh && chmod 0700 ~/.ssh "
-                       sh " ssh-keyscan -t rsa,dsa ${MASTER_NODE} >> ~/.ssh/known_hosts "
-                       sh "ssh ubuntu@$MASTER_NODE chmod +x deploy_to_${deployenv}.sh"
-                       sh "ssh ubuntu@$MASTER_NODE ./deploy_to_${deployenv}.sh"
-                      }
-                  }
-              }
+                 sshagent(credentials: [env.SSH_CREDENTIALS_ID]) {
+                     script {
+                         sh "del deploy_to_${deployenv}.sh"
+                         sh "curl -o deploy_to_${deployenv}.sh \"https://raw.githubusercontent.com/imen309/EOS/test/deploy_to_${deployenv}.sh\""
+                         sh "scp deploy_to_${deployenv}.sh ubuntu@$MASTER_NODE:~"
+                         sh "[ -d ~/.ssh ] || mkdir ~/.ssh && chmod 0700 ~/.ssh "
+                         sh "ssh-keyscan -t rsa,dsa ${MASTER_NODE} >> ~/.ssh/known_hosts "
+                         sh "ssh ubuntu@$MASTER_NODE chmod +x deploy_to_${deployenv}.sh"
+                         sh "ssh ubuntu@$MASTER_NODE ./deploy_to_${deployenv}.sh"
+                     }
+                 }
+             }
          }
 
 
