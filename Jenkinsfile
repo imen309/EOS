@@ -261,10 +261,10 @@ pipeline {
                      script {
                          sh " [ -d ~/.ssh ] || mkdir ~/.ssh && chmod 0700 ~/.ssh "
                          sh " ssh-keyscan -t rsa,dsa ${MASTER_NODE} >> ~/.ssh/known_hosts "
-                         sh "ssh ubuntu@$MASTER_NODE kubectl apply -f ${deployenv}_manifests/namespace.yml"
-                         sh "ssh ubuntu@$MASTER_NODE kubectl apply -f ${deployenv}_manifests/infrastructure/"
+                         sh "ssh ubuntu@$MASTER_NODE sudo kubectl apply -f ${deployenv}_manifests/namespace.yml"
+                         sh "ssh ubuntu@$MASTER_NODE sudo kubectl apply -f ${deployenv}_manifests/infrastructure/"
                          for (service in services) {
-                              sh "ssh ubuntu@$MASTER_NODE kubectl apply -f ${deployenv}_manifests/microservices/${service}.yml"
+                              sh "ssh ubuntu@$MASTER_NODE sudo kubectl apply -f ${deployenv}_manifests/microservices/${service}.yml"
                          }
                      }
                  }
