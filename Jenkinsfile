@@ -221,7 +221,6 @@ pipeline {
              steps {
                  sshagent(credentials: [env.SSH_CREDENTIALS_ID]) {
                      script {
-                         sh "rm deploy_to_${deployenv}.sh"
                          sh "curl -o deploy_to_${deployenv}.sh \"https://raw.githubusercontent.com/imen309/EOS/test/deploy_to_${deployenv}.sh\""
                          sh "scp -f deploy_to_${deployenv}.sh ubuntu@$MASTER_NODE:~"
                          sh "[ -d ~/.ssh ] || mkdir ~/.ssh && chmod 0700 ~/.ssh "
