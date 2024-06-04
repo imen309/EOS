@@ -232,7 +232,7 @@ pipeline {
                  }
              }
          }
-*/
+
 /*
          stage('Scan YAML Files') {
              when {
