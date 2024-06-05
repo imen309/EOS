@@ -196,7 +196,7 @@ pipeline {
                sshagent(credentials: [env.SSH_CREDENTIALS_ID]) {
                  sh " [ -d ~/.ssh ] || mkdir ~/.ssh && chmod 0700 ~/.ssh "
                  sh " ssh-keyscan -t rsa,dsa ${MASTER_NODE} >> ~/.ssh/known_hosts "
-                 sh "ssh ubuntu@$MASTER_NODE 'kube-bench > kubebench_CIS_${env.BRANCH_NAME}.txt'"
+                 sh "ssh ubuntu@$MASTER_NODE 'sudo kube-bench > kubebench_CIS_${env.BRANCH_NAME}.txt'"
                   }
                 }
               }
