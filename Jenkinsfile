@@ -209,7 +209,7 @@ pipeline {
               sshagent(credentials: [env.SSH_CREDENTIALS_ID]) {
                 sh " [ -d ~/.ssh ] || mkdir ~/.ssh && chmod 0700 ~/.ssh "
                 sh " ssh-keyscan -t rsa,dsa ${MASTER_NODE} >> ~/.ssh/known_hosts "
-                sh "ssh ubuntu@$MASTER_NODE 'kubescape scan framework mitre > kubescape_mitre_${env.BRANCH_NAME}.txt'"
+                sh "ssh ubuntu@$MASTER_NODE 'sudo kubescape scan framework mitre > kubescape_mitre_${env.BRANCH_NAME}.txt'"
                 }
               }
             }
@@ -244,8 +244,8 @@ pipeline {
                         sh " ssh-keyscan -t rsa,dsa ${MASTER_NODE} >> ~/.ssh/known_hosts "
                         sh "ssh ubuntu@$MASTER_NODE rm -f kubescape_infrastructure_${deployenv}.txt"
                         sh "ssh ubuntu@$MASTER_NODE rm -f kubescape_microservices_${deployenv}.txt"
-                        sh "ssh ubuntu@$MASTER_NODE 'kubescape scan ${deployenv}_manifests/infrastructure/*.yml > kubescape_infrastructure_${deployenv}.txt'"
-                        sh "ssh ubuntu@$MASTER_NODE 'kubescape scan ${deployenv}_manifests/microservices/*.yml > kubescape_microservices_${deployenv}.txt'"
+                        sh "ssh ubuntu@$MASTER_NODE 'sudo kubescape scan ${deployenv}_manifests/infrastructure/*.yml > kubescape_infrastructure_${deployenv}.txt'"
+                        sh "ssh ubuntu@$MASTER_NODE 'sudo kubescape scan ${deployenv}_manifests/microservices/*.yml > kubescape_microservices_${deployenv}.txt'"
                     }
                 }
              }
