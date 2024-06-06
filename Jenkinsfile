@@ -90,11 +90,11 @@ pipeline {
                          withSonarQubeEnv('sonarqube') {
                             sh 'mvn sonar:sonar'
                           }
-                          dependencyCheck additionalArguments: '--format HTML', odcInstallation: 'dependency-check'
-             }
+
+                     }
+                  }
+               }
            }
-          }
-         }
         }
 
         stage('Docker Login') {
@@ -135,25 +135,21 @@ pipeline {
 
         stage('Trivy Image Scan') {
             when {
-                expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
+               expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
             }
             steps {
-                script {
-                    // Scan each Docker image for vulnerabilities using Trivy
-                    for (def service in microservices) {
-                        def trivyReportFile = "trivy-${service}.txt"
-
-                        // Combine vulnerability and severity filters for clarity and flexibility
-                        def trivyScanArgs = "--scanners vuln --severiCRITICAL,HIGH,MEDIUM--timeout 30m"
-                        if (env.BRANCH_NAME == 'test') {
-                            sh "docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $PWD:/tmp/.cache/ aquasec/trivy image --scanners vuln --timeout 30m ${DOCKERHUB_USERNAME}/${service}_test:latest > ${trivyReportFile}"
-                        } else if (env.BRANCH_NAME == 'master') {
-                            sh "docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $PWD:/tmp/.cache/ aquasec/trivy image --scanners vuln --timeout 30m ${DOCKERHUB_USERNAME}/${service}_prod:latest > ${trivyReportFile}"
-                        } else if (env.BRANCH_NAME == 'dev') {
-                            sh "docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $PWD:/tmp/.cache/ aquasec/trivy image --scanners vuln --timeout 30m ${DOCKERHUB_USERNAME}/${service}_dev:latest > ${trivyReportFile}"
-                        }
-                    }
-                }
+               script {
+                   for (def service in services) {
+                      def trivyReportFile = "trivy-${service}.txt"
+                         if (env.BRANCH_NAME == 'test') {
+                             sh "sudo trivy --timeout 15m image ${DOCKERHUB_USERNAME}/${service}_test:latest > ${trivyReportFile}"
+                         } else if (env.BRANCH_NAME == 'master') {
+                             sh "sudo trivy --timeout 15m image ${DOCKERHUB_USERNAME}/${service}_prod:latest > ${trivyReportFile}"
+                         } else if (env.BRANCH_NAME == 'dev') {
+                             sh "sudo trivy --timeout 15m image ${DOCKERHUB_USERNAME}/${service}_dev:latest > ${trivyReportFile}"
+                         }
+                   }
+               }
             }
         }
 
@@ -167,10 +163,13 @@ pipeline {
                     for (def service in microservices) {
                         if (env.BRANCH_NAME == 'test') {
                             sh "docker push ${DOCKERHUB_USERNAME}/${service}_test:latest"
+                            sh "docker rmi -f ${DOCKERHUB_USERNAME}/${service}_test:latest"
                         } else if (env.BRANCH_NAME == 'master') {
                             sh "docker push ${DOCKERHUB_USERNAME}/${service}_prod:latest"
+                            sh "docker rmi -f ${DOCKERHUB_USERNAME}/${service}_prod:latest"
                         } else if (env.BRANCH_NAME == 'dev') {
                             sh "docker push ${DOCKERHUB_USERNAME}/${service}_dev:latest"
+                            sh "docker rmi -f ${DOCKERHUB_USERNAME}/${service}_dev:latest"
                         }
                     }
                 }
@@ -262,9 +261,11 @@ pipeline {
          }
 
          stage('Send reports to Slack') {
+             when {
+                 expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
+             }
              steps {
                  slackUploadFile filePath: '**/trufflehog.txt',  initialComment: 'Check TruffleHog Reports!!'
-                 slackUploadFile filePath: '**/reports/*.html', initialComment: 'Check ODC Reports!!'
                  slackUploadFile filePath: '**/trivy-*.txt', initialComment: 'Check Trivy Reports!!'
              }
            }
@@ -272,7 +273,10 @@ pipeline {
 
          post {
              always {
-                 archiveArtifacts artifacts: '**/trufflehog.txt, **/reports/*.html, **/trivy-*.txt'
+                script {
+                   if ((env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master'))
+                     archiveArtifacts artifacts: '**/trufflehog.txt, **/reports*.html, **/trivy-*.txt'
+                }
              }
          }
 
