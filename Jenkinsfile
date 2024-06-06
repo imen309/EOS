@@ -134,24 +134,28 @@ pipeline {
         }
 
         stage('Trivy Image Scan') {
-            when {
-               expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
-            }
-            steps {
-               script {
-                   for (def service in services) {
-                      def trivyReportFile = "trivy-${service}.txt"
-                         if (env.BRANCH_NAME == 'test') {
-                             sh "trivy --timeout 15m image ${DOCKERHUB_USERNAME}/${service}_test:latest > ${trivyReportFile}"
-                         } else if (env.BRANCH_NAME == 'master') {
-                             sh "trivy --timeout 15m image ${DOCKERHUB_USERNAME}/${service}_prod:latest > ${trivyReportFile}"
-                         } else if (env.BRANCH_NAME == 'dev') {
-                             sh "trivy --timeout 15m image ${DOCKERHUB_USERNAME}/${service}_dev:latest > ${trivyReportFile}"
-                         }
-                   }
-               }
-            }
-        }
+                    when {
+                        expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
+                    }
+                    steps {
+                        script {
+                            // Scan each Docker image for vulnerabilities using Trivy
+                            for (def service in microservices) {
+                                def trivyReportFile = "trivy-${service}.txt"
+
+                                // Combine vulnerability and severity filters for clarity and flexibility
+                                def trivyScanArgs = "--scanners vuln --severiCRITICAL,HIGH,MEDIUM--timeout 30m"
+                                if (env.BRANCH_NAME == 'test') {
+                                    sh "docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $PWD:/tmp/.cache/ aquasec/trivy image --scanners vuln --timeout 30m ${DOCKERHUB_USERNAME}/${service}_test:latest > ${trivyReportFile}"
+                                } else if (env.BRANCH_NAME == 'master') {
+                                    sh "docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $PWD:/tmp/.cache/ aquasec/trivy image --scanners vuln --timeout 30m ${DOCKERHUB_USERNAME}/${service}_prod:latest > ${trivyReportFile}"
+                                } else if (env.BRANCH_NAME == 'dev') {
+                                    sh "docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $PWD:/tmp/.cache/ aquasec/trivy image --scanners vuln --timeout 30m ${DOCKERHUB_USERNAME}/${service}_dev:latest > ${trivyReportFile}"
+                                }
+                            }
+                        }
+                    }
+                }
 
         stage('Docker Push') {
             when {
