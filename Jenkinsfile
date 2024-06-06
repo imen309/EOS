@@ -37,13 +37,22 @@ pipeline {
         }
 
         stage('Check Git Secrets') {
-           when {
-              expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
-           }
-           steps {
-              sh 'docker run --rm -v "$PWD:/pwd" trufflesecurity/trufflehog:latest github --repo https://github.com/imen309/EOS.git > trufflehog.txt'
-           }
-        }
+                    when {
+                        expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
+                    }
+                    steps {
+                        script {
+                            // Check each microservice for secrets
+                            for (def service in microservices) {
+                                dir(service) {
+                                    // Run TruffleHog to check for secrets in the repository
+                                    sh 'docker run --rm gesellix/trufflehog --json https://github.com/imen309/EOS.git > trufflehog.json'
+                                    sh 'cat trufflehog.json' // Output the results
+                                }
+                            }
+                        }
+                    }
+                }
 /*
         stage('Maven Build') {
             when {
@@ -269,7 +278,7 @@ pipeline {
                  expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
              }
              steps {
-                 slackUploadFile filePath: '**/trufflehog.txt',  initialComment: 'Check TruffleHog Reports!!'
+                 slackUploadFile filePath: '**/trufflehog.json',  initialComment: 'Check TruffleHog Reports!!'
    //              slackUploadFile filePath: '**/trivy-*.txt', initialComment: 'Check Trivy Reports!!'
              }
            }
@@ -279,7 +288,7 @@ pipeline {
              always {
                 script {
                    if ((env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master'))
-                     archiveArtifacts artifacts: '**/trufflehog.txt'
+                     archiveArtifacts artifacts: '**/trufflehog.json'
                     // archiveArtifacts artifacts: '**/trufflehog.txt, **/reports*.html, **/trivy-*.txt'
                 }
              }
