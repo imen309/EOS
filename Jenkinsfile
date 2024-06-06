@@ -1,6 +1,6 @@
 
-def microservices = ['ecomm-web']
-def frontEndService = 'ecomm-ui'
+def microservices = ['ecomm-cart','ecomm-order','ecomm-product','ecomm-web']
+def frontEndService = ['ecomm-ui']
 def services = microservices + frontEndService
 def deployenv = ''
 if (env.BRANCH_NAME == 'test') {
@@ -35,7 +35,7 @@ pipeline {
                 ])
             }
         }
-/*
+
         stage('Check Git Secrets') {
             when {
                 expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
@@ -187,7 +187,7 @@ pipeline {
         }
 
 
-*/
+
          stage('Kube-bench Scan') {
              when {
                expression { (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
@@ -201,7 +201,7 @@ pipeline {
                 }
               }
 
-         stage('Kubescope Scan') {
+         stage('Kubescape Scan') {
             when {
               expression { (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
             }
