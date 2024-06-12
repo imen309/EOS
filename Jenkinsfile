@@ -43,7 +43,7 @@ pipeline {
                     steps {
                         script {
                             // Check each microservice for secrets
-                            for (def service in microservices) {
+                            for (def service in services) {
                                 dir(service) {
                                     // Run TruffleHog to check for secrets in the repository
                                     sh 'docker run --rm gesellix/trufflehog --json https://github.com/imen309/EOS.git > trufflehog.json'
@@ -61,7 +61,7 @@ pipeline {
             steps {
                 script {
                     // Build each microservice using Maven
-                    for (def service in microservices) {
+                    for (def service in services) {
                         dir(service) {
                             sh 'mvn clean install'
                         }
@@ -77,7 +77,7 @@ pipeline {
             steps {
                 script {
                     // Run unit tests for each microservice using Maven
-                    for (def service in microservices) {
+                    for (def service in services) {
                         dir(service) {
                             sh 'mvn test'
                         }
@@ -95,7 +95,7 @@ pipeline {
           steps {
             script {
                // Run unit tests for each microservice using Maven
-                  for (def service in microservices) {
+                  for (def service in services) {
                      dir(service) {
                          withSonarQubeEnv('sonarqube') {
                             sh 'mvn sonar:sonar'
@@ -127,8 +127,8 @@ pipeline {
             }
             steps {
                 script {
-                    // Build Docker images for each microservice based on the branch
-                    for (def service in microservices) {
+
+                    for (def service in services) {
                         dir(service) {
                             if (env.BRANCH_NAME == 'test') {
                                 sh "docker build -t ${DOCKERHUB_USERNAME}/${service}_test:latest ."
@@ -150,7 +150,7 @@ pipeline {
                     steps {
                         script {
                             // Scan each Docker image for vulnerabilities using Trivy
-                            for (def service in microservices) {
+                            for (def service in services) {
                                 def trivyReportFile = "trivy-${service}.txt"
 
                                 // Combine vulnerability and severity filters for clarity and flexibility
@@ -174,7 +174,7 @@ pipeline {
             steps {
                 script {
                     // Push each Docker image to Docker Hub based on the branch
-                    for (def service in microservices) {
+                    for (def service in services) {
                         if (env.BRANCH_NAME == 'test') {
                             sh "docker push ${DOCKERHUB_USERNAME}/${service}_test:latest"
                             sh "docker rmi -f ${DOCKERHUB_USERNAME}/${service}_test:latest"
