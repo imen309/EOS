@@ -61,7 +61,7 @@ pipeline {
             steps {
                 script {
                     // Build each microservice using Maven
-                    for (def service in services) {
+                    for (def service in microservices) {
                         dir(service) {
                             sh 'mvn clean install'
                         }
@@ -76,8 +76,8 @@ pipeline {
             }
             steps {
                 script {
-                    // Run unit tests for each microservice using Maven
-                    for (def service in services) {
+                    
+                    for (def service in microservices) {
                         dir(service) {
                             sh 'mvn test'
                         }
