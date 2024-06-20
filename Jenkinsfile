@@ -53,7 +53,7 @@ pipeline {
                         }
                     }
                 }
-
+*/
         stage('Maven Build') {
             when {
                 expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
@@ -85,7 +85,7 @@ pipeline {
                 }
             }
         }
-
+/*
         stage('SonarQube Analysis and Dependency Check') {
           when {
             expression {
@@ -106,7 +106,7 @@ pipeline {
                }
            }
         }
-
+*/
         stage('Docker Login') {
             when {
                 expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
@@ -142,7 +142,7 @@ pipeline {
                 }
             }
         }
-
+/*
         stage('Trivy Image Scan') {
                     when {
                         expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
@@ -166,7 +166,7 @@ pipeline {
                         }
                     }
                 }
-
+*/
         stage('Docker Push') {
             when {
                 expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
@@ -191,7 +191,7 @@ pipeline {
         }
 
 
-
+/*
          stage('Kube-bench Scan') {
              when {
                expression { (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
@@ -217,7 +217,7 @@ pipeline {
                 }
               }
             }
-
+*/
          stage('Get YAML Files') {
              when {
                  expression { (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
@@ -274,10 +274,26 @@ pipeline {
               }
          }
 
+         stage('Send reports to Slack') {
+             when {
+                 expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
+             }
+             steps {
+                 slackUploadFile filePath: '**/trufflehog.json',  initialComment: 'Check TruffleHog Reports!!'
+   //              slackUploadFile filePath: '**/trivy-*.txt', initialComment: 'Check Trivy Reports!!'
+             }
+           }
+         }
 
-
-
-*/
+         post {
+             always {
+                script {
+                   if ((env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master'))
+                     archiveArtifacts artifacts: '**/trufflehog.json'
+                    // archiveArtifacts artifacts: '**/trufflehog.txt, **/reports*.html, **/trivy-*.txt'
+                }
+             }
+         }
 
 
 }
