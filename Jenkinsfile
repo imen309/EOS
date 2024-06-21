@@ -1,7 +1,7 @@
 
 def microservices = ['ecomm-cart','ecomm-order','ecomm-product','ecomm-web']
-def frontEndService = ['ecomm-ui']
-def services = microservices + frontEndService
+def frontendservice = ['ecomm-ui']
+def services = microservices + frontendservice
 def deployenv = ''
 if (env.BRANCH_NAME == 'test') {
     deployenv = 'test'
@@ -18,7 +18,6 @@ pipeline {
     environment {
         DOCKERHUB_USERNAME = "imenmettichi"
         SSH_CREDENTIALS_ID= "ec2sshkeyID"
-        // Ensure Docker credentials are stored securely in Jenkins
         SCANNER_HOME = tool 'sonarqube'
         MASTER_NODE= "44.223.127.246"
     }
@@ -35,32 +34,44 @@ pipeline {
                 ])
             }
         }
-/*
+
         stage('Check Git Secrets') {
-                    when {
-                        expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
-                    }
-                    steps {
-                        script {
-                            // Check each microservice for secrets
-                            for (def service in services) {
-                                dir(service) {
-                                    // Run TruffleHog to check for secrets in the repository
-                                    sh 'docker run --rm gesellix/trufflehog --json https://github.com/imen309/EOS.git > trufflehog.json'
-                                    sh 'cat trufflehog.json' // Output the results
-                                }
-                            }
-                        }
-                    }
-                }
-*/
+           when {
+               expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
+           }
+           steps {
+               sh 'docker run --rm -v "$PWD:/pwd" trufflesecurity/trufflehog:latest github --repo https://github.com/imen309/EOS.git > trufflehog.txt'
+           }
+        }
+
+        stage('Source Composition Analysis') {
+            when {
+               expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
+            }
+            steps {
+               script {
+                   for (def service in services) {
+                       dir(service) {
+                           def reportFile = "dependency-check-report-${service}.html"
+                           if (service in microservices) {
+                               sh 'rm -f owasp-dependency-check.sh'
+                               sh 'wget "https://raw.githubusercontent.com/imen309/EOS/test/owasp-dependency-check.sh"'
+                               sh 'chmod +x owasp-dependency-check.sh'
+                               sh "./owasp-dependency-check.sh"
+                               sh "mv /var/lib/jenkins/OWASP-Dependency-Check/reports/dependency-check-report.html /var/lib/jenkins/OWASP-Dependency-Check/reports/${reportFile}"
+                           }
+                       }
+                   }
+               }
+            }
+        }
+
         stage('Maven Build') {
             when {
                 expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
             }
             steps {
                 script {
-                    // Build each microservice using Maven
                     for (def service in microservices) {
                         dir(service) {
                             sh 'mvn clean install'
@@ -76,7 +87,6 @@ pipeline {
             }
             steps {
                 script {
-                    
                     for (def service in microservices) {
                         dir(service) {
                             sh 'mvn test'
@@ -85,28 +95,24 @@ pipeline {
                 }
             }
         }
-/*
-        stage('SonarQube Analysis and Dependency Check') {
-          when {
-            expression {
-              (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master')
-                }
-               }
-          steps {
-            script {
-               // Run unit tests for each microservice using Maven
-                  for (def service in services) {
-                     dir(service) {
-                         withSonarQubeEnv('sonarqube') {
-                            sh 'mvn sonar:sonar'
-                          }
 
+        stage('SonarQube Analysis') {
+           when {
+               expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
+           }
+           steps {
+               script {
+                  for (def service in microservices) {
+                     dir(service) {
+                        withSonarQubeEnv('sonarqube') {
+                            sh 'mvn clean package sonar:sonar'
+                        }
                      }
                   }
                }
            }
         }
-*/
+
         stage('Docker Login') {
             when {
                 expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
@@ -127,7 +133,6 @@ pipeline {
             }
             steps {
                 script {
-
                     for (def service in services) {
                         dir(service) {
                             if (env.BRANCH_NAME == 'test') {
@@ -142,38 +147,33 @@ pipeline {
                 }
             }
         }
-/*
-        stage('Trivy Image Scan') {
-                    when {
-                        expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
-                    }
-                    steps {
-                        script {
-                            // Scan each Docker image for vulnerabilities using Trivy
-                            for (def service in services) {
-                                def trivyReportFile = "trivy-${service}.txt"
 
-                                // Combine vulnerability and severity filters for clarity and flexibility
-                                def trivyScanArgs = "--scanners vuln --severiCRITICAL,HIGH,MEDIUM--timeout 30m"
-                                if (env.BRANCH_NAME == 'test') {
-                                    sh "docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $PWD:/tmp/.cache/ aquasec/trivy image --scanners vuln --timeout 30m ${DOCKERHUB_USERNAME}/${service}_test:latest > ${trivyReportFile}"
-                                } else if (env.BRANCH_NAME == 'master') {
-                                    sh "docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $PWD:/tmp/.cache/ aquasec/trivy image --scanners vuln --timeout 30m ${DOCKERHUB_USERNAME}/${service}_prod:latest > ${trivyReportFile}"
-                                } else if (env.BRANCH_NAME == 'dev') {
-                                    sh "docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $PWD:/tmp/.cache/ aquasec/trivy image --scanners vuln --timeout 30m ${DOCKERHUB_USERNAME}/${service}_dev:latest > ${trivyReportFile}"
-                                }
-                            }
+        stage('Trivy Image Scan') {
+            when {
+                expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
+            }
+            steps {
+                script {
+                    for (def service in services) {
+                        def trivyReportFile = "trivy-${service}.txt"
+                        if (env.BRANCH_NAME == 'test') {
+                            sh "sudo trivy --timeout 15m image ${DOCKERHUB_USERNAME}/${service}_test:latest > ${trivyReportFile}"
+                        } else if (env.BRANCH_NAME == 'master') {
+                            sh "sudo trivy --timeout 15m image ${DOCKERHUB_USERNAME}/${service}_prod:latest > ${trivyReportFile}"
+                        } else if (env.BRANCH_NAME == 'dev') {
+                            sh "sudo trivy --timeout 15m image ${DOCKERHUB_USERNAME}/${service}_dev:latest > ${trivyReportFile}"
                         }
                     }
                 }
-*/
+            }
+        }
+
         stage('Docker Push') {
             when {
                 expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
             }
             steps {
                 script {
-                    // Push each Docker image to Docker Hub based on the branch
                     for (def service in services) {
                         if (env.BRANCH_NAME == 'test') {
                             sh "docker push ${DOCKERHUB_USERNAME}/${service}_test:latest"
@@ -190,34 +190,34 @@ pipeline {
             }
         }
 
-
-/*
          stage('Kube-bench Scan') {
              when {
                expression { (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
              }
              steps {
-               sshagent(credentials: [env.SSH_CREDENTIALS_ID]) {
-                 sh " [ -d ~/.ssh ] || mkdir ~/.ssh && chmod 0700 ~/.ssh "
-                 sh " ssh-keyscan -t rsa,dsa ${MASTER_NODE} >> ~/.ssh/known_hosts "
-                 sh "ssh ubuntu@$MASTER_NODE 'sudo kube-bench > kubebench_CIS_${env.BRANCH_NAME}.txt'"
-                  }
+                sshagent(credentials: [env.SSH_CREDENTIALS_ID]) {
+                  sh " [ -d ~/.ssh ] || mkdir ~/.ssh && chmod 0700 ~/.ssh "
+                  sh " ssh-keyscan -t rsa,dsa ${MASTER_NODE} >> ~/.ssh/known_hosts "
+                  sh "ssh ubuntu@$MASTER_NODE 'sudo kube-bench > kubebench_CIS_${env.BRANCH_NAME}.txt'"
+                  sh "ssh ubuntu@$MASTER_NODE cat kubebench_CIS_${env.BRANCH_NAME}.txt"
                 }
-              }
+             }
+         }
 
          stage('Kubescape Scan') {
             when {
               expression { (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
             }
             steps {
-              sshagent(credentials: [env.SSH_CREDENTIALS_ID]) {
-                sh " [ -d ~/.ssh ] || mkdir ~/.ssh && chmod 0700 ~/.ssh "
-                sh " ssh-keyscan -t rsa,dsa ${MASTER_NODE} >> ~/.ssh/known_hosts "
-                sh "ssh ubuntu@$MASTER_NODE 'sudo kubescape scan framework mitre > kubescape_mitre_${env.BRANCH_NAME}.txt'"
-                }
-              }
+               sshagent(credentials: [env.SSH_CREDENTIALS_ID]) {
+                 sh " [ -d ~/.ssh ] || mkdir ~/.ssh && chmod 0700 ~/.ssh "
+                 sh " ssh-keyscan -t rsa,dsa ${MASTER_NODE} >> ~/.ssh/known_hosts "
+                 sh "ssh ubuntu@$MASTER_NODE 'sudo kubescape scan framework mitre > kubescape_mitre_${env.BRANCH_NAME}.txt'"
+                 sh "ssh ubuntu@$MASTER_NODE cat kubescape_mitre_${env.BRANCH_NAME}.txt"
+               }
             }
-*/
+         }
+
          stage('Get YAML Files') {
              when {
                  expression { (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
@@ -225,7 +225,7 @@ pipeline {
              steps {
                  sshagent(credentials: [env.SSH_CREDENTIALS_ID]) {
                      script {
-                         sh "curl -o deploy_to_${deployenv}.sh \"https://raw.githubusercontent.com/imen309/EOS/test/deploy_to_${deployenv}.sh\""
+                         sh "wget \"https://raw.githubusercontent.com/imen309/EOS/test/deploy_to_${deployenv}.sh\""
                          sh "[ -d ~/.ssh ] || mkdir ~/.ssh && chmod 0700 ~/.ssh "
                          sh "ssh-keyscan -t rsa,dsa ${MASTER_NODE} >> ~/.ssh/known_hosts "
                          sh "scp deploy_to_${deployenv}.sh ubuntu@$MASTER_NODE:~"
@@ -235,7 +235,6 @@ pipeline {
                  }
              }
          }
-
 
          stage('Scan YAML Files') {
              when {
@@ -248,8 +247,10 @@ pipeline {
                         sh " ssh-keyscan -t rsa,dsa ${MASTER_NODE} >> ~/.ssh/known_hosts "
                         sh "ssh ubuntu@$MASTER_NODE rm -f kubescape_infrastructure_${deployenv}.txt"
                         sh "ssh ubuntu@$MASTER_NODE rm -f kubescape_microservices_${deployenv}.txt"
-                        sh "ssh ubuntu@$MASTER_NODE 'sudo kubescape scan ${deployenv}_manifests/infrastructure/*.yml > kubescape_infrastructure_${deployenv}.txt'"
-                        sh "ssh ubuntu@$MASTER_NODE 'sudo kubescape scan ${deployenv}_manifests/microservices/*.yml > kubescape_microservices_${deployenv}.txt'"
+                        sh "ssh ubuntu@$MASTER_NODE 'sudo kubescape scan ${deployenv}_manifests/infrastructure/*.yml -v > kubescape_infrastructure_${deployenv}.txt'"
+                        sh "ssh ubuntu@$MASTER_NODE cat kubescape_infrastructure_${deployenv}.txt"
+                        sh "ssh ubuntu@$MASTER_NODE 'sudo kubescape scan ${deployenv}_manifests/microservices/*.yml -v > kubescape_microservices_${deployenv}.txt'"
+                        sh "ssh ubuntu@$MASTER_NODE cat kubescape_microservices_${deployenv}.txt"
                     }
                 }
              }
@@ -279,8 +280,8 @@ pipeline {
                  expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
              }
              steps {
-                 slackUploadFile filePath: '**/trufflehog.json',  initialComment: 'Check TruffleHog Reports!!'
-   //              slackUploadFile filePath: '**/trivy-*.txt', initialComment: 'Check Trivy Reports!!'
+                 slackUploadFile filePath: '**/trufflehog.txt',  initialComment: 'Check TruffleHog Reports!!'
+                 slackUploadFile filePath: '**/trivy-*.txt', initialComment: 'Check Trivy Reports!!'
              }
            }
          }
@@ -289,8 +290,7 @@ pipeline {
              always {
                 script {
                    if ((env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master'))
-                     archiveArtifacts artifacts: '**/trufflehog.json'
-                    // archiveArtifacts artifacts: '**/trufflehog.txt, **/reports*.html, **/trivy-*.txt'
+                     archiveArtifacts artifacts: '**/trufflehog.txt, **/trivy-*.txt'
                 }
              }
          }
