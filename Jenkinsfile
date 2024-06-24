@@ -40,7 +40,7 @@ pipeline {
                expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
            }
            steps {
-               sh 'sudo docker run --rm -v "$PWD:/pwd" trufflesecurity/trufflehog:latest github --repo https://github.com/imen309/EOS.git > trufflehog.txt'
+               sh 'docker run --rm -v "$PWD:/pwd" trufflesecurity/trufflehog:latest github --repo https://github.com/imen309/EOS.git > trufflehog.txt'
            }
         }
 
