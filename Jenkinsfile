@@ -228,7 +228,7 @@ pipeline {
                          sh "wget \"https://raw.githubusercontent.com/imen309/EOS/test/deploy_to_${deployenv}.sh\""
                          sh " [ -d ~/.ssh ] || mkdir ~/.ssh && chmod 0700 ~/.ssh "
                          sh " ssh-keyscan -t rsa,dsa ${MASTER_NODE} >> ~/.ssh/known_hosts "
-                         sh "scp deploy_to_${deployenv}.sh ubuntu@$MASTER_NODE:~"
+                         sh "scp deploy_to_${deployenv}.sh imen@$MASTER_NODE:~"
                          sh "ssh $MASTER_NODE chmod +x deploy_to_${deployenv}.sh"
                          sh "ssh $MASTER_NODE ./deploy_to_${deployenv}.sh"
                      }
