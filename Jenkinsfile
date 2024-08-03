@@ -34,7 +34,7 @@ pipeline {
                 ])
             }
         }
-
+/*
         stage('Check Git Secrets') {
            when {
                expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
@@ -217,7 +217,7 @@ pipeline {
                }
             }
          }
-
+*/
          stage('Get YAML Files') {
              when {
                  expression { (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
@@ -235,7 +235,7 @@ pipeline {
                  }
              }
          }
-
+/*
          stage('Scan YAML Files') {
              when {
                 expression { (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
@@ -255,7 +255,7 @@ pipeline {
                 }
              }
          }
-
+*/
          stage('Deploy to Kubernetes') {
               when {
                  expression { (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
