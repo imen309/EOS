@@ -19,7 +19,7 @@ pipeline {
         DOCKERHUB_USERNAME = "imenmettichi"
         SSH_CREDENTIALS_ID= "sshkeyID"
         SCANNER_HOME = tool 'sonarqube'
-        MASTER_NODE= "master1@master1"
+        MASTER_NODE= "192.168.253.133"
     }
 
     stages {
