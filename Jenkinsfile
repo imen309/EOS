@@ -17,7 +17,7 @@ pipeline {
 
     environment {
         DOCKERHUB_USERNAME = "imenmettichi"
-        SSH_CREDENTIALS_ID= "ec2sshkeyID"
+        SSH_CREDENTIALS_ID= "sshkeyID"
         SCANNER_HOME = tool 'sonarqube'
         MASTER_NODE= "44.223.127.246"
     }
