@@ -226,7 +226,9 @@ pipeline {
                  sshagent(credentials: [env.SSH_CREDENTIALS_ID]) {
                      script {
                          sh "wget \"https://raw.githubusercontent.com/imen309/EOS/test/deploy_to_${deployenv}.sh\""
-                         sh "scp deploy_to_${deployenv}.sh $MASTER_NODE:~"
+                         sh " [ -d ~/.ssh ] || mkdir ~/.ssh && chmod 0700 ~/.ssh "
+                         sh " ssh-keyscan -t rsa,dsa ${MASTER_NODE} >> ~/.ssh/known_hosts "
+                         sh "scp deploy_to_${deployenv}.sh ubuntu@$MASTER_NODE:~"
                          sh "ssh $MASTER_NODE chmod +x deploy_to_${deployenv}.sh"
                          sh "ssh $MASTER_NODE ./deploy_to_${deployenv}.sh"
                      }
