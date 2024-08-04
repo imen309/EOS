@@ -19,7 +19,7 @@ pipeline {
         DOCKERHUB_USERNAME = "imenmettichi"
         SSH_CREDENTIALS_ID= "sshkeyID"
         SCANNER_HOME = tool 'sonarqube'
-        MASTER_NODE= "192.168.253.133"
+        MASTER_NODE= 'imen@master1'
     }
 
     stages {
@@ -228,7 +228,7 @@ pipeline {
                          sh "wget \"https://raw.githubusercontent.com/imen309/EOS/test/deploy_to_${deployenv}.sh\""
                          sh " [ -d ~/.ssh ] || mkdir ~/.ssh && chmod 0700 ~/.ssh "
                          sh " ssh-keyscan -t rsa,dsa ${MASTER_NODE} >> ~/.ssh/known_hosts "
-                         sh "scp deploy_to_${deployenv}.sh imen@$MASTER_NODE:~"
+                         sh "scp deploy_to_${deployenv}.sh $MASTER_NODE:~"
                          sh "ssh $MASTER_NODE chmod +x deploy_to_${deployenv}.sh"
                          sh "ssh $MASTER_NODE ./deploy_to_${deployenv}.sh"
                      }
