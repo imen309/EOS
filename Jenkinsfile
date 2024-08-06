@@ -261,12 +261,10 @@ pipeline {
               steps {
                  sshagent(credentials: [env.SSH_CREDENTIALS_ID]) {
                      script {
-                         sh " [ -d ~/.ssh ] || mkdir ~/.ssh && chmod 0700 ~/.ssh "
-                         sh " ssh-keyscan -t rsa,dsa ${MASTER_NODE} >> ~/.ssh/known_hosts "
-                         sh "ssh ubuntu@$MASTER_NODE sudo kubectl apply -f ${deployenv}_manifests/namespace.yml"
-                         sh "ssh ubuntu@$MASTER_NODE sudo kubectl apply -f ${deployenv}_manifests/infrastructure/"
+                         sh "ssh $MASTER_NODE sudo kubectl apply -f ${deployenv}_manifests/namespace.yml"
+                         sh "ssh $MASTER_NODE sudo kubectl apply -f ${deployenv}_manifests/infrastructure/"
                          for (service in services) {
-                              sh "ssh ubuntu@$MASTER_NODE sudo kubectl apply -f ${deployenv}_manifests/microservices/${service}.yml"
+                              sh "ssh $MASTER_NODE sudo kubectl apply -f ${deployenv}_manifests/microservices/${service}.yml"
                          }
                      }
                  }
