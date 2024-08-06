@@ -261,10 +261,10 @@ pipeline {
               steps {
                  sshagent(credentials: [env.SSH_CREDENTIALS_ID]) {
                      script {
-                         sh "ssh $MASTER_NODE sudo kubectl apply -f ${deployenv}_manifests/namespace.yml"
-                         sh "ssh $MASTER_NODE sudo kubectl apply -f ${deployenv}_manifests/infrastructure/"
+                         sh "ssh $MASTER_NODE kubectl apply -f ${deployenv}_manifests/namespace.yml"
+                         sh "ssh $MASTER_NODE kubectl apply -f ${deployenv}_manifests/infrastructure/"
                          for (service in services) {
-                              sh "ssh $MASTER_NODE sudo kubectl apply -f ${deployenv}_manifests/microservices/${service}.yml"
+                              sh "ssh $MASTER_NODE kubectl apply -f ${deployenv}_manifests/microservices/${service}.yml"
                          }
                      }
                  }
