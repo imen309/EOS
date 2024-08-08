@@ -189,21 +189,19 @@ pipeline {
                 }
             }
         }
-
+*/
          stage('Kube-bench Scan') {
              when {
                expression { (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
              }
              steps {
                 sshagent(credentials: [env.SSH_CREDENTIALS_ID]) {
-                  sh " [ -d ~/.ssh ] || mkdir ~/.ssh && chmod 0700 ~/.ssh "
-                  sh " ssh-keyscan -t rsa,dsa ${MASTER_NODE} >> ~/.ssh/known_hosts "
-                  sh "ssh ubuntu@$MASTER_NODE 'sudo kube-bench > kubebench_CIS_${env.BRANCH_NAME}.txt'"
-                  sh "ssh ubuntu@$MASTER_NODE cat kubebench_CIS_${env.BRANCH_NAME}.txt"
+                  sh "ssh $MASTER_NODE 'kube-bench > kubebench_CIS_${env.BRANCH_NAME}.txt'"
+                  sh "ssh $MASTER_NODE cat kubebench_CIS_${env.BRANCH_NAME}.txt"
                 }
              }
          }
-
+/*
          stage('Kubescape Scan') {
             when {
               expression { (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
