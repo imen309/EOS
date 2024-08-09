@@ -196,7 +196,7 @@ pipeline {
              }
              steps {
                 sshagent(credentials: [env.SSH_CREDENTIALS_ID]) {
-                  sh "ssh $MASTER_NODE 'cd /usr/local/bin && ./kube-bench --config-dir /etc/kube-bench --config /etc/kube-bench/config.yaml > kubebench_CIS_${env.BRANCH_NAME}.txt'"
+                  sh "ssh $MASTER_NODE 'cd /usr/local/bin && ./kube-bench --config-dir /etc/kube-bench --config /etc/kube-bench/config.yaml > /home/master1/kubebench_CIS_${env.BRANCH_NAME}.txt'"
                   sh "ssh $MASTER_NODE cat kubebench_CIS_${env.BRANCH_NAME}.txt"
                 }
              }
