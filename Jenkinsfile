@@ -201,21 +201,19 @@ pipeline {
                 }
              }
          }
-/*
+
          stage('Kubescape Scan') {
             when {
               expression { (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
             }
             steps {
                sshagent(credentials: [env.SSH_CREDENTIALS_ID]) {
-                 sh " [ -d ~/.ssh ] || mkdir ~/.ssh && chmod 0700 ~/.ssh "
-                 sh " ssh-keyscan -t rsa,dsa ${MASTER_NODE} >> ~/.ssh/known_hosts "
-                 sh "ssh ubuntu@$MASTER_NODE 'sudo kubescape scan framework mitre > kubescape_mitre_${env.BRANCH_NAME}.txt'"
-                 sh "ssh ubuntu@$MASTER_NODE cat kubescape_mitre_${env.BRANCH_NAME}.txt"
+                 sh "ssh $MASTER_NODE 'kubescape scan framework mitre > kubescape_mitre_${env.BRANCH_NAME}.txt'"
+                 sh "ssh $MASTER_NODE cat kubescape_mitre_${env.BRANCH_NAME}.txt"
                }
             }
          }
-*/
+
          stage('Get YAML Files') {
              when {
                  expression { (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
@@ -231,7 +229,7 @@ pipeline {
                  }
              }
          }
-/*
+
          stage('Scan YAML Files') {
              when {
                 expression { (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
@@ -239,19 +237,17 @@ pipeline {
              steps {
                 sshagent(credentials: [env.SSH_CREDENTIALS_ID]) {
                     script {
-                        sh " [ -d ~/.ssh ] || mkdir ~/.ssh && chmod 0700 ~/.ssh "
-                        sh " ssh-keyscan -t rsa,dsa ${MASTER_NODE} >> ~/.ssh/known_hosts "
-                        sh "ssh ubuntu@$MASTER_NODE rm -f kubescape_infrastructure_${deployenv}.txt"
-                        sh "ssh ubuntu@$MASTER_NODE rm -f kubescape_microservices_${deployenv}.txt"
-                        sh "ssh ubuntu@$MASTER_NODE 'sudo kubescape scan ${deployenv}_manifests/infrastructure/*.yml -v > kubescape_infrastructure_${deployenv}.txt'"
-                        sh "ssh ubuntu@$MASTER_NODE cat kubescape_infrastructure_${deployenv}.txt"
-                        sh "ssh ubuntu@$MASTER_NODE 'sudo kubescape scan ${deployenv}_manifests/microservices/*.yml -v > kubescape_microservices_${deployenv}.txt'"
-                        sh "ssh ubuntu@$MASTER_NODE cat kubescape_microservices_${deployenv}.txt"
+                        sh "ssh $MASTER_NODE rm -f kubescape_infrastructure_${deployenv}.txt"
+                        sh "ssh $MASTER_NODE rm -f kubescape_microservices_${deployenv}.txt"
+                        sh "ssh $MASTER_NODE 'kubescape scan ${deployenv}_manifests/infrastructure/*.yml -v > kubescape_infrastructure_${deployenv}.txt'"
+                        sh "ssh $MASTER_NODE cat kubescape_infrastructure_${deployenv}.txt"
+                        sh "ssh $MASTER_NODE 'kubescape scan ${deployenv}_manifests/microservices/*.yml -v > kubescape_microservices_${deployenv}.txt'"
+                        sh "ssh $MASTER_NODE cat kubescape_microservices_${deployenv}.txt"
                     }
                 }
              }
          }
-*/
+
          stage('Deploy to Kubernetes') {
               when {
                  expression { (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
