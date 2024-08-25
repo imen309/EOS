@@ -43,7 +43,7 @@ pipeline {
                sh 'docker run --rm -v "$PWD:/pwd" trufflesecurity/trufflehog:latest github --repo https://github.com/imen309/EOS.git > trufflehog.txt'
            }
         }
-
+/*
         stage('Source Composition Analysis') {
             when {
                expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
@@ -65,7 +65,16 @@ pipeline {
                }
             }
         }
-
+*/
+        stage('Source Composition Analysis') {
+           when {
+               expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
+           }
+           steps {
+               dependencyCheck additionalArguments: '', odcInstallation: 'dependency-check-main'
+               dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
+           }
+        }
         stage('Maven Build') {
             when {
                 expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
