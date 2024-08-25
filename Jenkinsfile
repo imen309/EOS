@@ -57,7 +57,7 @@ pipeline {
                                sh 'rm -f owasp-dependency-check.sh'
                                sh 'wget "https://raw.githubusercontent.com/imen309/EOS/test/owasp-dependency-check.sh"'
                                sh 'chmod +x owasp-dependency-check.sh'
-                               sh "./owasp-dependency-check.sh --nvdApiKey f6481540-26b9-423b-b835-5a1b94d5e85b"
+                               sh "./owasp-dependency-check.sh --nvdApiKey=f6481540-26b9-423b-b835-5a1b94d5e85b"
                                sh "mv /var/lib/jenkins/OWASP-Dependency-Check/reports/dependency-check-report.html /var/lib/jenkins/OWASP-Dependency-Check/reports/${reportFile}"
                            }
                        }
