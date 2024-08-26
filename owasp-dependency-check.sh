@@ -26,4 +26,4 @@ docker run --rm \
     --format "HTML" \
     --project "My OWASP Dependency Check Project" \
     --out /report \
-    --nvd-api-key "$NVD_API_KEY"
+    --nvdApiKey "$NVD_API_KEY"
