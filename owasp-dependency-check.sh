@@ -13,7 +13,7 @@ if [ ! -d "$DATA_DIRECTORY" ]; then
     chmod -R 777 "$REPORT_DIRECTORY"
 fi
 
-
+# Clé API NVD
 NVD_API_KEY="1676d6a0-7c25-4f36-91bd-27389b01e451"
 
 # Exécuter le scan avec Docker
@@ -26,4 +26,6 @@ docker run --rm \
     --format "HTML" \
     --project "My OWASP Dependency Check Project" \
     --out /report \
-    --nvdApiKey "$NVD_API_KEY"
+    --nvdApiKey "$NVD_API_KEY" \
+    --log /report/dependency-check.log
+
