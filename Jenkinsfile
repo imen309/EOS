@@ -66,15 +66,20 @@ pipeline {
             }
         }
 */
-        stage('Source Composition Analysis') {
-           when {
-               expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
-           }
-           steps {
-               dependencyCheck additionalArguments: '', odcInstallation: 'dependency-check-main'
-               dependencyCheckPublisher pattern: '** /dependency-check-report.xml'
-           }
+    stage('Source Composition Analysis') {
+        when {
+            expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
         }
+        steps {
+            script {
+                // Run Dependency-Check with HTML report generation
+                dependencyCheck additionalArguments: '--format HTML --out ./dependency-check-report.html', odcInstallation: 'dependency-check-main'
+            }
+            // Publish the HTML report
+            archiveArtifacts artifacts: 'dependency-check-report.html', allowEmptyArchive: true
+        }
+    }
+
 
         stage('Maven Build') {
             when {
