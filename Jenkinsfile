@@ -1,5 +1,7 @@
 
-def microservices = ['ecomm-cart','ecomm-order','ecomm-product','ecomm-web','ecomm-ui']
+def microservices = ['ecomm-cart','ecomm-order','ecomm-product','ecomm-web']
+def frontendservice = ['ecomm-ui']
+def services = microservices + frontendservice
 
 pipeline {
     agent any
@@ -119,7 +121,7 @@ pipeline {
             steps {
                 script {
                     // Build Docker images for each microservice based on the branch
-                    for (def service in microservices) {
+                    for (def service in services) {
                         dir(service) {
                             if (env.BRANCH_NAME == 'test') {
                                 sh "docker build -t ${DOCKERHUB_USERNAME}/${service}_test:latest ."
@@ -167,7 +169,7 @@ pipeline {
             steps {
                 script {
                     // Push each Docker image to Docker Hub based on the branch
-                    for (def service in microservices) {
+                    for (def service in services) {
                         if (env.BRANCH_NAME == 'test') {
                             sh "docker push ${DOCKERHUB_USERNAME}/${service}_test:latest"
                         } else if (env.BRANCH_NAME == 'master') {
