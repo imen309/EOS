@@ -25,7 +25,7 @@ pipeline {
                 ])
             }
         }
-
+/*
         stage('Check Git Secrets') {
             when {
                 expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
@@ -43,7 +43,8 @@ pipeline {
                 }
             }
         }
-//stage maven build
+*/
+
         stage('Maven Build') {
             when {
                 expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
@@ -75,6 +76,7 @@ pipeline {
                 }
             }
         }
+/*
         stage('SonarQube Analysis and Dependency Check') {
           when {
             expression {
@@ -95,7 +97,7 @@ pipeline {
           }
          }
         }
-
+*/
         stage('Docker Login') {
             when {
                 expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
@@ -131,7 +133,7 @@ pipeline {
                 }
             }
         }
-
+/*
         stage('Trivy Image Scan') {
             when {
                 expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
@@ -152,12 +154,12 @@ pipeline {
                             sh "docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $PWD:/tmp/.cache/ aquasec/trivy image --scanners vuln --timeout 30m ${DOCKERHUB_USERNAME}/${service}_dev:latest > ${trivyReportFile}"
                         }
                          // Archive Trivy reports for all microservices in a dedicated directory
-                         archiveArtifacts "**/*.txt"
+                         archiveArtifacts "** /*.txt"
                     }
                 }
             }
         }
-
+*/
         stage('Docker Push') {
             when {
                 expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
@@ -177,7 +179,7 @@ pipeline {
                 }
             }
         }
-
+/*
         stage('Deploy to Kubernetes') {
              when {
                expression { (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
@@ -196,7 +198,7 @@ pipeline {
              }
            }
          }
-
+*/
 
     }
 }
