@@ -6,7 +6,7 @@ pipeline {
     tools{
             maven 'maven'
         }
-
+// add environment
     environment {
         DOCKERHUB_USERNAME = "imenmettichi"
         // Ensure Docker credentials are stored securely in Jenkins
