@@ -262,7 +262,8 @@ pipeline {
                 }
              }
          }
-
+*/
+/*
          stage('Deploy to Kubernetes') {
               when {
                  expression { (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
