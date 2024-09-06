@@ -11,6 +11,7 @@ if (env.BRANCH_NAME == 'test') {
 
 pipeline {
     agent any
+    // added tools
     tools{
             maven 'maven'
         }
@@ -280,7 +281,7 @@ pipeline {
                  }
               }
          }
-         
+
    }
 
 }
