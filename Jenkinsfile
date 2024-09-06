@@ -11,6 +11,7 @@ if (env.BRANCH_NAME == 'test') {
 
 pipeline {
     agent any
+    // define tools
     tools{
             maven 'maven'
         }
