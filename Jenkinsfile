@@ -228,7 +228,7 @@ pipeline {
                }
             }
          }
-
+/*
          stage('Get YAML Files') {
              when {
                  expression { (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
