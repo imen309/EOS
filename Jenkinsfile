@@ -1,4 +1,4 @@
-
+// definition of microservice 
 def microservices = ['ecomm-cart']
 
 pipeline {
@@ -11,7 +11,7 @@ pipeline {
     }
 
     stages {
-    // add stage 
+    // add stage
         stage('Checkout') {
             steps {
                 // Checkout the repository from GitHub
