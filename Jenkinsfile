@@ -18,7 +18,7 @@ pipeline {
             steps {
                 // Checkout the repository from GitHub
                 checkout([
-                    $class: 'GitSCM',
+                    $class: 'GitSCM', //checkout
                     branches: [[name: env.BRANCH_NAME]], // Checkout the current branch
                     userRemoteConfigs: [[url: 'https://github.com/imen309/EOS.git']]
                 ])
