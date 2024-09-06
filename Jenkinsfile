@@ -15,7 +15,7 @@ pipeline {
     tools{
             maven 'maven'
         }
-
+// add environment
     environment {
         DOCKERHUB_USERNAME = "imenmettichi"
         SSH_CREDENTIALS_ID= "sshkeyID"
