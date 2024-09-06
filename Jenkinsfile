@@ -11,6 +11,7 @@ pipeline {
     }
 
     stages {
+    // add stage 
         stage('Checkout') {
             steps {
                 // Checkout the repository from GitHub
