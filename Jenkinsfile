@@ -34,7 +34,7 @@ pipeline {
                 ])
             }
         }
-/*
+
         stage('Check Git Secrets') {
            when {
                expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
@@ -65,7 +65,7 @@ pipeline {
                }
             }
         }
-
+/*
     stage('Source Composition Analysis') {
         when {
             expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
@@ -110,7 +110,7 @@ pipeline {
                 }
             }
         }
-/*
+
         stage('SonarQube Analysis') {
            when {
                expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
@@ -127,7 +127,7 @@ pipeline {
                }
            }
         }
-*/
+
         stage('Docker Login') {
             when {
                 expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
@@ -162,7 +162,7 @@ pipeline {
                 }
             }
         }
-/*
+
         stage('Trivy Image Scan') {
             when {
                 expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
@@ -182,7 +182,7 @@ pipeline {
                 }
             }
         }
-*/
+
         stage('Docker Push') {
             when {
                 expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
@@ -204,7 +204,7 @@ pipeline {
                 }
             }
         }
-/*
+
          stage('Kube-bench Scan') {
              when {
                expression { (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
@@ -228,7 +228,7 @@ pipeline {
                }
             }
          }
-*/
+
          stage('Get YAML Files') {
              when {
                  expression { (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
@@ -244,7 +244,7 @@ pipeline {
                  }
              }
          }
-/*
+
          stage('Scan YAML Files') {
              when {
                 expression { (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
@@ -262,7 +262,7 @@ pipeline {
                 }
              }
          }
-*/
+
 
          stage('Deploy to Kubernetes') {
               when {
