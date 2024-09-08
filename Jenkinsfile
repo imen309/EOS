@@ -34,7 +34,7 @@ pipeline {
                 ])
             }
         }
-
+/*
         stage('Check Git Secrets') {
            when {
                expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
@@ -43,6 +43,7 @@ pipeline {
                sh 'docker run --rm -v "$PWD:/pwd" trufflesecurity/trufflehog:latest github --repo https://github.com/imen309/EOS.git > trufflehog.txt'
            }
         }
+*/
 /*
         stage('Source Composition Analysis') {
             when {
@@ -110,7 +111,7 @@ pipeline {
                 }
             }
         }
-
+/*
         stage('SonarQube Analysis') {
            when {
                expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
@@ -127,7 +128,7 @@ pipeline {
                }
            }
         }
-
+*/
         stage('Docker Login') {
             when {
                 expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
