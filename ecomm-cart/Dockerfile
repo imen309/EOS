@@ -1,4 +1,4 @@
-FROM amazoncorretto:21-alpine-jdk
+FROM amazoncorretto:21-alpine3.17-jdk
 WORKDIR /app
 ARG JAR_FILE=target/ecomm-cart-1.0.jar
 ADD ${JAR_FILE} .
