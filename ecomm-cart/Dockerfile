@@ -1,8 +1,5 @@
-FROM alpine:3.18
-RUN apk update && \
-    apk upgrade && \
-    apk add --no-cache busybox openssl
+FROM amazoncorretto:17-alpine-jdk
 WORKDIR /app
 ARG JAR_FILE=target/ecomm-cart-1.0.jar
 ADD ${JAR_FILE} .
-ENTRYPOINT ["java", "-jar", "ecomm-cart-1.0.jar"]
+ENTRYPOINT ["java","-jar","ecomm-cart-1.0.jar"]
