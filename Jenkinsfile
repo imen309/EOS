@@ -67,6 +67,7 @@ pipeline {
             }
         }
 */
+/*
     stage('Source Composition Analysis') {
         when {
             expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
@@ -81,7 +82,7 @@ pipeline {
         }
     }
 
-
+*/
         stage('Maven Build') {
             when {
                 expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
