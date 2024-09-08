@@ -1,6 +1,9 @@
-FROM amazoncorretto:21-alpine3.17-jdk
+FROM amazoncorretto:17-alpine-jdk
 WORKDIR /app
 ARG JAR_FILE=target/ecomm-cart-1.0.jar
 ADD ${JAR_FILE} .
-RUN apk add --no-cache busybox busybox-binsh libcrypto3 openssl
+RUN apt-get update && apt-get install -y \
+    busybox \
+    libssl-dev \
+    && rm -rf /var/lib/apt/lists/*
 ENTRYPOINT ["java","-jar","ecomm-cart-1.0.jar"]
