@@ -2,7 +2,7 @@ FROM amazoncorretto:17-alpine-jdk
 
 RUN apk update && \
     apk upgrade && \
-    apk add --no-cache libc6 libssl1.1 openssl
+    apk add --no-cache openssl
 
 WORKDIR /app
 
