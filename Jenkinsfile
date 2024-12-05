@@ -8,7 +8,7 @@ pipeline {
     tools{
             maven 'maven'
         }
-
+// add environment
     environment {
         //dockerhub credentials
         DOCKERHUB_USERNAME = "imenmettichi"
